@@ -7,17 +7,29 @@ namespace POSServer.Models
     {
         public int Id { get; set; }
 
-
         [Required]
         [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [Required]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
-        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
-        public decimal Price { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Suppler price must be a positive value.")]
+        public decimal SupplierPrice { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Retail price must be a positive value.")]
+        public decimal RetailPrice { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Wholesale price must be a positive value.")]
+        public decimal WholesalePrice { get; set; }
+        public int ReorderLevel { get; set; }
+
+        [Required]
+        [Range(0, 1, ErrorMessage = "IsVat must be 0 (inactive) or 1 (active).")]
+        public int IsVat { get; set; }
 
         [Required]
         [Range(0, 1, ErrorMessage = "Status must be 0 (inactive) or 1 (active).")]

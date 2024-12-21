@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.SignalR;
 using POSServer.Data;
 using POSServer.Hubs;
 using POSServer.Models;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace POSServer.Controllers
@@ -36,7 +35,9 @@ namespace POSServer.Controllers
                 p.Id,
                 p.Name,
                 p.Description,
-                p.Price,
+                p.SupplierPrice,
+                p.RetailPrice,
+                p.WholesalePrice,
                 p.Status,
                 p.DateCreated,
                 Category = p.Category == null
@@ -83,7 +84,9 @@ namespace POSServer.Controllers
 
             dbProduct.Name = product.Name;
             dbProduct.Description = product.Description;
-            dbProduct.Price = product.Price;
+            dbProduct.SupplierPrice = product.SupplierPrice;
+            dbProduct.RetailPrice = product.RetailPrice;
+            dbProduct.WholesalePrice = product.WholesalePrice;
             dbProduct.CategoryId = product.CategoryId;
             dbProduct.Status = product.Status;
             await _context.SaveChangesAsync();

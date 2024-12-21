@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using POSServer.Data;
+using POSServer.Hubs;
 using POSServer.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,24 +18,29 @@ namespace POSServer.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IHubContext<UserHub> _hubContext;
 
-        public AuthController(AppDbContext context, IConfiguration configuration)
+        public AuthController(AppDbContext context, IConfiguration configuration, IHubContext<UserHub> hubContext)
         {
             _context = context;
             _configuration = configuration;
+            _hubContext = hubContext;
         }
 
         [HttpPost("register")]
-        public IActionResult Register(string username, string password)
+        public async Task<IActionResult> Register(Users users)
         {
-            if (_context.Users.Any(u => u.Username == username))
+            if (_context.Users.Any(u => u.Username == users.Username))
                 return BadRequest("User already exists.");
 
             var user = new Users
             {
-                Username = username,
-                Password = password,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+                Username = users.Username,
+                Password = users.Password,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(users.Password),
+                Name = users.Name,
+                IsRole = users.IsRole,
+                Status = users.Status
             };
 
             _context.Users.Add(user);
@@ -68,6 +77,91 @@ namespace POSServer.Controllers
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
                 Message = "Login successfully"
             });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetAll()
+        {
+            if (_context == null)
+                return StatusCode(500, "Database context is null.");
+
+            var users = _context.Users.ToList();
+
+            return Ok(users);
+        }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        public IActionResult Get(int id)
+        {
+            var users = _context.Users.Find(id);
+            if (users == null) return NotFound();
+            return Ok(users);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Create(Users users)
+        {
+
+            if (_context.Users.Any(u => u.Username == users.Username))
+                return BadRequest("User already exists.");
+
+            var user = new Users
+            {
+                Username = users.Username,
+                Password = users.Password,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(users.Password),
+                Name = users.Name,
+                IsRole = users.IsRole,
+                Status = users.Status
+            };
+
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            // Notify SignalR clients
+            await _hubContext.Clients.All.SendAsync("UserAdded", users);
+
+            return CreatedAtAction(nameof(Get), new { id = users.Id }, users);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Update(int id, Users users)
+        {
+            var dbUser = _context.Users.Find(id);
+            if (dbUser == null) return NotFound();
+
+            dbUser.Username = users.Username;
+            dbUser.Password = users.Password;
+            dbUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(users.Password);
+            dbUser.Name = users.Name;
+            dbUser.IsRole = users.IsRole;
+            dbUser.Status = users.Status;
+            await _context.SaveChangesAsync();
+
+            // Notify SignalR clients
+            await _hubContext.Clients.All.SendAsync("UserUpdated", dbUser);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var users = _context.Users.Find(id);
+            if (users == null) return NotFound();
+
+            _context.Users.Remove(users);
+            await _context.SaveChangesAsync();
+
+            // Notify SignalR clients
+            await _hubContext.Clients.All.SendAsync("UserDeleted", id);
+
+            return NoContent();
         }
     }
 }

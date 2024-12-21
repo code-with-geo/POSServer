@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.SignalR;
 using POSServer.Data;
 using POSServer.Hubs;
 using POSServer.Models;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace POSServer.Controllers
@@ -40,7 +39,7 @@ namespace POSServer.Controllers
                     i.Products.Id,
                     i.Products.Name,
                     i.Products.Description,
-                    i.Products.Price,
+                    i.Products.RetailPrice,
                     Category = i.Products.Category == null ? null : new
                     {
                         i.Products.Category.CategoryId,

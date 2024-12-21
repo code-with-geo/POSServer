@@ -40,7 +40,7 @@ namespace POSServer.Controllers
                   {
                       ProductId = op.ProductId,
                       ProductName = op.Products.Name,
-                      Price = op.Products.Price,
+                      RetailPrice = op.Products.RetailPrice,
                       Quantity = op.Quantity,
                       SubTotal = op.SubTotal
                   }).ToList()
@@ -74,7 +74,7 @@ namespace POSServer.Controllers
             decimal totalAmount = request.Products.Sum(productDetails =>
             {
                 var product = products.FirstOrDefault(p => p.Id == productDetails.ProductId);
-                return product != null ? product.Price * productDetails.Quantity : 0;
+                return product != null ? product.RetailPrice * productDetails.Quantity : 0;
             });
 
             // Create the order
@@ -94,7 +94,7 @@ namespace POSServer.Controllers
                 var product = products.FirstOrDefault(p => p.Id == productDetails.ProductId);
                 if (product != null)
                 {
-                    var subTotal = product.Price * productDetails.Quantity;
+                    var subTotal = product.RetailPrice * productDetails.Quantity;
                     _context.OrderProducts.Add(new OrderProducts
                     {
                         OrderId = order.OrderId,

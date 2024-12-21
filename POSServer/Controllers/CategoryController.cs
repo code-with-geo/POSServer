@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.SignalR;
 using POSServer.Data;
 using POSServer.Hubs;
 using POSServer.Models;
-using Microsoft.AspNetCore.SignalR;
 
 namespace POSServer.Controllers
 {

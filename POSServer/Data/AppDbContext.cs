@@ -7,22 +7,33 @@ namespace POSServer.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<Users> Users { get; set; }
-        public DbSet<Products> Products { get; set; }
-        public DbSet<Category> Category { get; set; }
-        public DbSet<Inventory> Inventory { get; set; }
-        public DbSet<Locations> Locations { get; set; }
-        public DbSet<Orders> Orders { get; set; }
-        public DbSet<OrderProducts> OrderProducts { get; set; }
+        public DbSet<Users> Users { get; set; } = null!;
+        public DbSet<Products> Products { get; set; } = null!;
+        public DbSet<Category> Category { get; set; } = null!;
+        public DbSet<Inventory> Inventory { get; set; } = null!;
+        public DbSet<Locations> Locations { get; set; } = null!;
+        public DbSet<Orders> Orders { get; set; } = null!;
+        public DbSet<OrderProducts> OrderProducts { get; set; } = null!;
+        public DbSet<CashDrawer> CashDrawer { get; set; } = null!;
+        public DbSet<Discounts> Discounts { get; set; } = null!;
+        public DbSet<Suppliers> Suppliers { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Users>(entity =>
+            {
+                entity.Property(u => u.DataCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
             modelBuilder.Entity<Products>(entity =>
             {
                 // Set decimal precision to 18 digits with 2 after the decimal point
-                entity.Property(p => p.Price).HasPrecision(18, 2);
+                entity.Property(p => p.SupplierPrice).HasPrecision(18, 2);
+                entity.Property(p => p.RetailPrice).HasPrecision(18, 2);
+                entity.Property(p => p.WholesalePrice).HasPrecision(18, 2);
                 entity.Property(n => n.Name)
                       .HasMaxLength(100)
                       .IsRequired();
@@ -101,6 +112,42 @@ namespace POSServer.Data
                 entity.HasOne(op => op.Products)
                     .WithMany(p => p.OrderProducts)
                     .HasForeignKey(op => op.ProductId);
+            });
+
+            modelBuilder.Entity<CashDrawer>(entity =>
+            {
+                entity.HasKey(d => d.DrawerId);
+                entity.Property(d => d.InitialCash).HasPrecision(18, 2);
+                entity.Property(d => d.TotalSales).HasPrecision(18, 2);
+                entity.Property(d => d.Withdrawals).HasPrecision(18, 2);
+                entity.Property(d => d.Expense).HasPrecision(18, 2);
+                entity.Property(d => d.DrawerCash).HasPrecision(18, 2);
+                entity.Property(d => d.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(d => d.TimeStart).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            modelBuilder.Entity<Discounts>(entity =>
+            {
+                entity.HasKey(d => d.DiscountId);
+                entity.Property(d => d.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            modelBuilder.Entity<Suppliers>(entity =>
+            {
+                entity.HasKey(s => s.SupplierId);
+                entity.Property(c => c.Name)
+                     .HasMaxLength(50)
+                     .IsRequired();
+                entity.Property(c => c.Address)
+                     .HasMaxLength(150)
+                     .IsRequired();
+                entity.Property(c => c.ContactPerson)
+                     .HasMaxLength(50)
+                     .IsRequired();
+                entity.Property(c => c.ContactNo)
+                    .HasMaxLength(50)
+                    .IsRequired();
+                entity.Property(s => s.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
         }
     }
