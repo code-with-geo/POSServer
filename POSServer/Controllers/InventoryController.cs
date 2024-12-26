@@ -100,18 +100,18 @@ namespace POSServer.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpPut("remove/{id}")]
         [Authorize]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Disable(int id)
         {
-            var inventory = _context.Inventory.Find(id);
-            if (inventory == null) return NotFound();
+            var dbInventory = _context.Inventory.Find(id);
+            if (dbInventory == null) return NotFound();
 
-            _context.Inventory.Remove(inventory);
+            dbInventory.Status = 0;
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients
-            await _hubContext.Clients.All.SendAsync("InventoryDeleted", id);
+            await _hubContext.Clients.All.SendAsync("InventoryUpdated", dbInventory);
 
             return NoContent();
         }

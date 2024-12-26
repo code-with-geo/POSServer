@@ -54,7 +54,7 @@ namespace POSServer.Controllers
         [Authorize]
         public async Task<IActionResult> Update(int id, Category category)
         {
-            var dbCategory = _context.Products.Find(id);
+            var dbCategory = _context.Category.Find(id);
             if (dbCategory == null) return NotFound();
 
             dbCategory.Name = category.Name;
@@ -66,18 +66,18 @@ namespace POSServer.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpPut("remove/{id}")]
         [Authorize]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Disable(int id)
         {
-            var category = _context.Category.Find(id);
-            if (category == null) return NotFound();
+            var dbCategory = _context.Category.Find(id);
+            if (dbCategory == null) return NotFound();
 
-            _context.Category.Remove(category);
+            dbCategory.Status = 0;
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients
-            await _hubContext.Clients.All.SendAsync("CategoryDeleted", id);
+            await _hubContext.Clients.All.SendAsync("CategoryUpdated", dbCategory);
 
             return NoContent();
         }

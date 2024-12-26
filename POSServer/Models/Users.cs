@@ -20,6 +20,6 @@ namespace POSServer.Models
         public int Status { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public DateTime DataCreated { get; set; } = DateTime.UtcNow;
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
     }
 }

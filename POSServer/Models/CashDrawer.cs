@@ -6,7 +6,7 @@ namespace POSServer.Models
     public class CashDrawer
     {
         public int DrawerId { get; set; }
-        public string Cashier { get; set; }
+        public string? Cashier { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         [Range(0, double.MaxValue, ErrorMessage = "Initial cash must be a positive value.")]
@@ -33,5 +33,9 @@ namespace POSServer.Models
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        [Range(0, 1, ErrorMessage = "Status must be 0 (inactive) or 1 (active).")]
+        public int Status { get; set; }
     }
 }

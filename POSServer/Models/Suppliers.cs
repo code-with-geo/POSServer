@@ -24,6 +24,10 @@ namespace POSServer.Models
         public string? ContactNo { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow; 
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        [Range(0, 1, ErrorMessage = "Status must be 0 (inactive) or 1 (active).")]
+        public int Status { get; set; }
     }
 }

@@ -9,12 +9,16 @@ namespace POSServer.Models
 
         [Required]
         [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime DateCreated { get; set; }
 
         public ICollection<Inventory> Inventory { get; set; } = new List<Inventory>();
+
+        [Required]
+        [Range(0, 1, ErrorMessage = "Status must be 0 (inactive) or 1 (active).")]
+        public int Status { get; set; }
 
     }
 }

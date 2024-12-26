@@ -70,18 +70,18 @@ namespace POSServer.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpPut("remove/{id}")]
         [Authorize]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Disable(int id)
         {
-            var locations = _context.Locations.Find(id);
-            if (locations == null) return NotFound();
+            var dbLocations = _context.Locations.Find(id);
+            if (dbLocations == null) return NotFound();
 
-            _context.Locations.Remove(locations);
+            dbLocations.Status = 0;
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients
-            await _hubContext.Clients.All.SendAsync("LocationDeleted", id);
+            await _hubContext.Clients.All.SendAsync("LocationUpdated", dbLocations);
 
             return NoContent();
         }

@@ -7,7 +7,7 @@ namespace POSServer.Models
     {
         public int DiscountId { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public int Percentage { get; set; }
 

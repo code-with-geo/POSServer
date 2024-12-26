@@ -25,7 +25,7 @@ namespace POSServer.Data
 
             modelBuilder.Entity<Users>(entity =>
             {
-                entity.Property(u => u.DataCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(u => u.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
             modelBuilder.Entity<Products>(entity =>

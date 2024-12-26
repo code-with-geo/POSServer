@@ -15,8 +15,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     new MySqlServerVersion(new Version(8, 0, 31))));
 
 // Configure the app to use port 8080
-//var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-//builder.WebHost.UseUrls($"http://*:{port}");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://*:{port}");
 
 builder.Services.AddSignalR();
 
@@ -117,5 +117,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ProductHub>("/hubs/products");
+app.MapHub<UserHub>("/hubs/users");
+app.MapHub<CategoryHub>("/hubs/category");
+app.MapHub<LocationHub>("/hubs/locations");
+app.MapHub<SupplierHub>("/hubs/suppliers");
+app.MapHub<DiscountHub>("/hubs/discounts");
+app.MapHub<CashDrawerHub>("/hubs/cashdrawer");
 
 app.Run();

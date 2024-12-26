@@ -2,7 +2,7 @@
 {
     public class OrderRequest
     {
-        public List<ProductOrderDetails> Products { get; set; }
+        public List<ProductOrderDetails?> Products { get; set; }
     }
 
     public class ProductOrderDetails

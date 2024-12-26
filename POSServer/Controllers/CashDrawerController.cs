@@ -75,18 +75,19 @@ namespace POSServer.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        [Authorize]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var drawers = _context.CashDrawer.Find(id);
-            if (drawers == null) return NotFound();
 
-            _context.CashDrawer.Remove(drawers);
+        [HttpPut("remove/{id}")]
+        [Authorize]
+        public async Task<IActionResult> Disable(int id)
+        {
+            var dbDrawer = _context.CashDrawer.Find(id);
+            if (dbDrawer == null) return NotFound();
+
+            dbDrawer.Status = 0;
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients
-            await _hubContext.Clients.All.SendAsync("CashDrawerDeleted", id);
+            await _hubContext.Clients.All.SendAsync("SupplierUpdated", dbDrawer);
 
             return NoContent();
         }

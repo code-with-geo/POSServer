@@ -6,7 +6,7 @@ namespace POSServer.Models
     public class Inventory
     {
         public int InventoryId { get; set; }
-        public string Specification { get; set; }
+        public string? Specification { get; set; }
         public int Units { get; set; }
         public int? ProductId { get; set; }
         [ForeignKey("ProductId")]

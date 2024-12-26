@@ -38,6 +38,8 @@ namespace POSServer.Controllers
                 p.SupplierPrice,
                 p.RetailPrice,
                 p.WholesalePrice,
+                p.ReorderLevel,
+                p.IsVat,
                 p.Status,
                 p.DateCreated,
                 Category = p.Category == null
@@ -97,18 +99,18 @@ namespace POSServer.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpPut("remove/{id}")]
         [Authorize]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Disable(int id)
         {
-            var product = _context.Products.Find(id);
-            if (product == null) return NotFound();
+            var dbProduct = _context.Products.Find(id);
+            if (dbProduct == null) return NotFound();
 
-            _context.Products.Remove(product);
+            dbProduct.Status = 0;
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients
-            await _hubContext.Clients.All.SendAsync("ProductDeleted", id);
+            await _hubContext.Clients.All.SendAsync("ProductUpdated", dbProduct);
 
             return NoContent();
         }
