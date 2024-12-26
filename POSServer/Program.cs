@@ -49,8 +49,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("https://pos-admin-rouge.vercel.app/")
-        //policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("https://pos-admin-rouge.vercel.app", // Your Vercel deployment
+            "http://localhost:3000") // Add localhost for testing
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // Allow cookies or credentials if needed
