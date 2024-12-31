@@ -27,7 +27,31 @@ namespace POSServer.Controllers
             if (_context == null)
                 return StatusCode(500, "Database context is null.");
 
-            var drawers = _context.CashDrawer.ToList();
+
+            var drawers = _context.CashDrawer
+           .Include(u => u.Users)
+           .Select(d => new
+           {
+               d.DrawerId,
+               d.Cashier,
+               d.InitialCash,
+               d.TotalSales,
+               d.Withdrawals,
+               d.Expense,
+               d.DrawerCash,
+               d.TimeStart,
+               d.DateCreated,
+               d.Status,
+               d.UserId,
+               Users = d.Users == null
+                   ? null
+                   : new
+                   {
+                       d.Users.Id,
+                       d.Users.Name
+                   }
+           })
+           .ToList();
 
             return Ok(drawers);
         }
@@ -67,6 +91,7 @@ namespace POSServer.Controllers
             dbDrawer.Withdrawals = drawers.Withdrawals;
             dbDrawer.Expense = drawers.Expense;
             dbDrawer.DrawerCash = drawers.DrawerCash;
+            dbDrawer.UserId = drawers.UserId;
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients

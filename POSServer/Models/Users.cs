@@ -19,6 +19,10 @@ namespace POSServer.Models
         [Range(0, 1, ErrorMessage = "Status must be 0 (inactive) or 1 (active).")]
         public int Status { get; set; }
 
+        public ICollection<CashDrawer> CashDrawer { get; set; } = new List<CashDrawer>();
+
+        public ICollection<Orders> Orders { get; set; } = new List<Orders>();
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
     }

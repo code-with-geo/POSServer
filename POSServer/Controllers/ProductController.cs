@@ -33,6 +33,7 @@ namespace POSServer.Controllers
             .Select(p => new
             {
                 p.Id,
+                p.Barcode,
                 p.Name,
                 p.Description,
                 p.SupplierPrice,
@@ -42,6 +43,7 @@ namespace POSServer.Controllers
                 p.IsVat,
                 p.Status,
                 p.DateCreated,
+                p.CategoryId,
                 Category = p.Category == null
                     ? null
                     : new
@@ -84,6 +86,7 @@ namespace POSServer.Controllers
             var dbProduct = _context.Products.Find(id);
             if (dbProduct == null) return NotFound();
 
+            dbProduct.Barcode = product.Barcode;
             dbProduct.Name = product.Name;
             dbProduct.Description = product.Description;
             dbProduct.SupplierPrice = product.SupplierPrice;
@@ -113,6 +116,58 @@ namespace POSServer.Controllers
             await _hubContext.Clients.All.SendAsync("ProductUpdated", dbProduct);
 
             return NoContent();
+        }
+
+        [HttpGet("barcode/{barcode}")]
+        [Authorize]
+        public IActionResult GetByBarcode(string barcode)
+        {
+            // Find the product with the specified barcode
+            var product = _context.Products.FirstOrDefault(p => p.Barcode == barcode);
+
+            // Return 404 if the product is not found
+            if (product == null) return NotFound();
+
+            // Return the product if found
+            return Ok(product);
+        }
+
+        [HttpGet("active/all")]
+        [Authorize]
+        public IActionResult GetAllActive()
+        {
+            if (_context == null)
+                return StatusCode(500, "Database context is null.");
+
+            // Retrieve products with Status = 1
+            var products = _context.Products
+                .Where(p => p.Status == 1) // Filter products with Status = 1
+                .Include(p => p.Category) // Include the related Category
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Barcode,
+                    p.Name,
+                    p.Description,
+                    p.SupplierPrice,
+                    p.RetailPrice,
+                    p.WholesalePrice,
+                    p.ReorderLevel,
+                    p.IsVat,
+                    p.Status,
+                    p.DateCreated,
+                    p.CategoryId,
+                    Category = p.Category == null
+                        ? null
+                        : new
+                        {
+                            p.Category.CategoryId,
+                            p.Category.Name
+                        }
+                })
+                .ToList();
+
+            return Ok(products);
         }
     }
 }

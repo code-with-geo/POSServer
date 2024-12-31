@@ -57,11 +57,16 @@ namespace POSServer.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Withdrawals")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("DrawerId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("CashDrawer");
                 });
@@ -166,6 +171,12 @@ namespace POSServer.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<string>("Password")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("longtext");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -182,6 +193,12 @@ namespace POSServer.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("DiscountId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DiscountsDiscountId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -190,6 +207,8 @@ namespace POSServer.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("OrderId", "ProductId");
+
+                    b.HasIndex("DiscountsDiscountId");
 
                     b.HasIndex("ProductId");
 
@@ -207,6 +226,12 @@ namespace POSServer.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("DiscountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -214,7 +239,16 @@ namespace POSServer.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("OrderId");
+
+                    b.HasIndex("DiscountId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Orders");
                 });
@@ -224,6 +258,11 @@ namespace POSServer.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
@@ -244,6 +283,11 @@ namespace POSServer.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Remarks")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<int>("ReorderLevel")
                         .HasColumnType("int");
@@ -343,6 +387,15 @@ namespace POSServer.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("POSServer.Models.CashDrawer", b =>
+                {
+                    b.HasOne("POSServer.Models.Users", "Users")
+                        .WithMany("CashDrawer")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("POSServer.Models.Inventory", b =>
                 {
                     b.HasOne("POSServer.Models.Locations", "Locations")
@@ -361,6 +414,10 @@ namespace POSServer.Migrations
 
             modelBuilder.Entity("POSServer.Models.OrderProducts", b =>
                 {
+                    b.HasOne("POSServer.Models.Discounts", "Discounts")
+                        .WithMany()
+                        .HasForeignKey("DiscountsDiscountId");
+
                     b.HasOne("POSServer.Models.Orders", "Orders")
                         .WithMany("OrderProducts")
                         .HasForeignKey("OrderId")
@@ -373,9 +430,36 @@ namespace POSServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Discounts");
+
                     b.Navigation("Orders");
 
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Orders", b =>
+                {
+                    b.HasOne("POSServer.Models.Discounts", "Discounts")
+                        .WithMany("Orders")
+                        .HasForeignKey("DiscountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("POSServer.Models.Locations", "Location")
+                        .WithMany("Orders")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("POSServer.Models.Users", "Users")
+                        .WithMany("Orders")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Discounts");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("POSServer.Models.Products", b =>
@@ -393,9 +477,16 @@ namespace POSServer.Migrations
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("POSServer.Models.Discounts", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
             modelBuilder.Entity("POSServer.Models.Locations", b =>
                 {
                     b.Navigation("Inventory");
+
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("POSServer.Models.Orders", b =>
@@ -408,6 +499,13 @@ namespace POSServer.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("OrderProducts");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Users", b =>
+                {
+                    b.Navigation("CashDrawer");
+
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

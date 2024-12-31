@@ -17,5 +17,7 @@ namespace POSServer.Models
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        public ICollection<Orders> Orders { get; set; } = new List<Orders>();
     }
 }

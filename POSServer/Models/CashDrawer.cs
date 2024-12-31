@@ -7,6 +7,10 @@ namespace POSServer.Models
     {
         public int DrawerId { get; set; }
         public string? Cashier { get; set; }
+        public int? UserId { get; set; }
+
+        [ForeignKey("UserId")]
+        public Users? Users { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         [Range(0, double.MaxValue, ErrorMessage = "Initial cash must be a positive value.")]

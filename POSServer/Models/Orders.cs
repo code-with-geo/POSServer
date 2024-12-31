@@ -19,6 +19,21 @@ namespace POSServer.Models
         [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
         public decimal TotalAmount { get; set; }
 
+        public int? UserId { get; set; }
+
+        [ForeignKey("UserId")]
+        public Users? Users { get; set; }
+
+        // Foreign key for Locations
+        public int LocationId { get; set; }
+        [ForeignKey("LocationId")]
+        public Locations? Location { get; set; }
+
+        // Foreign key for Discounts
+        public int DiscountId { get; set; }
+        [ForeignKey("DiscountId")]
+        public Discounts? Discounts { get; set; }
+
         // Many-to-many relationship with products
         public ICollection<OrderProducts> OrderProducts { get; set; } = new List<OrderProducts>();
 

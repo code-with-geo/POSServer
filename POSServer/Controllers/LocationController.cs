@@ -1,10 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using POSServer.Data;
 using POSServer.Hubs;
 using POSServer.Models;
-using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
 
 namespace POSServer.Controllers
 {
@@ -13,6 +18,7 @@ namespace POSServer.Controllers
     public class LocationController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
         private readonly IHubContext<LocationHub> _hubContext;
         public LocationController(AppDbContext context, IHubContext<LocationHub> hubContext)
         {
@@ -45,13 +51,24 @@ namespace POSServer.Controllers
         [Authorize]
         public async Task<IActionResult> Create(Locations locations)
         {
-            _context.Locations.Add(locations);
+            // Create a new Locations object with hashed password
+            var location = new Locations
+            {
+                Name = locations.Name,
+                Password = locations.Password,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(locations.Password),
+                Status = locations.Status
+            };
+
+            // Add the new location to the context
+            _context.Locations.Add(location);
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients
-            await _hubContext.Clients.All.SendAsync("LocationAdded", locations);
+            await _hubContext.Clients.All.SendAsync("LocationAdded", location);
 
-            return CreatedAtAction(nameof(Get), new { id = locations.LocationId }, locations);
+            // Return the created location
+            return CreatedAtAction(nameof(Get), new { id = location.LocationId }, location);
         }
 
         [HttpPut("{id}")]
@@ -62,6 +79,8 @@ namespace POSServer.Controllers
             if (dbLocations == null) return NotFound();
 
             dbLocations.Name = locations.Name;
+            dbLocations.Password = locations.Password;
+            dbLocations.PasswordHash = BCrypt.Net.BCrypt.HashPassword(locations.Password);
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients
@@ -84,6 +103,20 @@ namespace POSServer.Controllers
             await _hubContext.Clients.All.SendAsync("LocationUpdated", dbLocations);
 
             return NoContent();
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login(int locationid, string password)
+        {
+            // Find the location by ID
+            var locations = _context.Locations.FirstOrDefault(l => l.LocationId == locationid);
+            if (locations == null || !BCrypt.Net.BCrypt.Verify(password, locations.PasswordHash))
+                return Unauthorized("Invalid credentials.");
+
+            return Ok(new
+            {
+                Message = "Login successfully"
+            });
         }
     }
 }

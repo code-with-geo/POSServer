@@ -30,7 +30,7 @@ namespace POSServer.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(Users users)
         {
-            if (_context.Users.Any(u => u.Username == users.Username))
+            if (await _context.Users.AnyAsync(u => u.Username == users.Username))
                 return BadRequest("User already exists.");
 
             var user = new Users
@@ -44,7 +44,7 @@ namespace POSServer.Controllers
             };
 
             _context.Users.Add(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok("User registered successfully.");
         }

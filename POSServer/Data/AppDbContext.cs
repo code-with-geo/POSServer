@@ -99,6 +99,18 @@ namespace POSServer.Data
                 entity.Property(p => p.TotalAmount).HasPrecision(18, 2);
                 // Add other configurations as needed, e.g., default values, relationships, etc.
                 entity.Property(o => o.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(u => u.Users)
+                    .WithMany(o => o.Orders)
+                    .HasForeignKey(u => u.UserId);
+
+                entity.HasOne(l => l.Location)
+                  .WithMany(o => o.Orders)
+                  .HasForeignKey(l => l.LocationId);
+
+                entity.HasOne(d => d.Discounts)
+                  .WithMany(o => o.Orders)
+                  .HasForeignKey(d => d.DiscountId);
             });
 
             modelBuilder.Entity<OrderProducts>(entity =>
@@ -124,6 +136,11 @@ namespace POSServer.Data
                 entity.Property(d => d.DrawerCash).HasPrecision(18, 2);
                 entity.Property(d => d.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(d => d.TimeStart).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+
+                entity.HasOne(u => u.Users)
+                    .WithMany(cd => cd.CashDrawer)
+                    .HasForeignKey(cd => cd.UserId);
             });
 
             modelBuilder.Entity<Discounts>(entity =>

@@ -72,11 +72,30 @@ namespace POSServer.Controllers
         [Authorize]
         public async Task<IActionResult> Create(Inventory inventory)
         {
-            _context.Inventory.Add(inventory);
-            await _context.SaveChangesAsync();
+            // Check if the product already exists in the inventory
+            var existingInventory = await _context.Inventory
+                .FirstOrDefaultAsync(i => i.ProductId == inventory.ProductId && i.LocationId == inventory.LocationId);
 
-            // Notify SignalR clients
-            await _hubContext.Clients.All.SendAsync("InventoryAdded", inventory);
+            if (existingInventory != null)
+            {
+                // Update the units for the existing product
+                existingInventory.Units += inventory.Units;
+                existingInventory.Specification = inventory.Specification;
+
+                // Notify SignalR clients about the update
+                await _hubContext.Clients.All.SendAsync("InventoryUpdated", existingInventory);
+            }
+            else
+            {
+                // Add a new inventory entry
+                _context.Inventory.Add(inventory);
+
+                // Notify SignalR clients about the addition
+                await _hubContext.Clients.All.SendAsync("InventoryAdded", inventory);
+            }
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(Get), new { id = inventory.InventoryId }, inventory);
         }
@@ -114,6 +133,32 @@ namespace POSServer.Controllers
             await _hubContext.Clients.All.SendAsync("InventoryUpdated", dbInventory);
 
             return NoContent();
+        }
+
+
+        [HttpGet("get/all")]
+        [Authorize]
+        public async Task<IActionResult> GetInventoryDetails()
+        {
+            var inventoryDetails = await (from inventory in _context.Inventory
+                                          join product in _context.Products
+                                          on inventory.ProductId equals product.Id
+                                          join location in _context.Locations
+                                          on inventory.LocationId equals location.LocationId
+                                          select new
+                                          {
+                                              inventory.InventoryId,
+                                              ProductName = product.Name,
+                                              product.Barcode,
+                                              ProductDescription = product.Description,
+                                              inventory.Units,
+                                              inventory.Specification,
+                                              LocationName = location.Name,
+                                              inventory.Status,
+                                              inventory.DateCreated
+                                          }).ToListAsync();
+
+            return Ok(inventoryDetails);
         }
     }
 }

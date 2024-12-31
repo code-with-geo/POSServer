@@ -11,6 +11,9 @@ namespace POSServer.Models
         public Products? Products { get; set; }
         public int Quantity { get; set; }
 
+        public int DiscountId { get; set; }
+        public Discounts? Discounts { get; set; }
+
         [Column(TypeName = "decimal(18, 2)")]
         [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
         public decimal SubTotal { get; set; }

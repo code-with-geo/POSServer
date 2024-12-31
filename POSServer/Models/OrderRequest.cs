@@ -2,7 +2,10 @@
 {
     public class OrderRequest
     {
-        public List<ProductOrderDetails?> Products { get; set; }
+        public List<ProductOrderDetails?>? Products { get; set; }
+        public int LocationId { get; set; } // Add this to specify the location
+        public int UserId { get; set; } // Add this to specify the user
+        public int DiscountId { get; set; } // Add this to specify the user
     }
 
     public class ProductOrderDetails
