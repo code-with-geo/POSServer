@@ -74,6 +74,7 @@ namespace POSServer.Controllers
 
             return Ok(new
             {
+                UserId = user.Id,
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
                 Message = "Login successfully"
             });

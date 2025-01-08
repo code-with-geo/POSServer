@@ -40,6 +40,7 @@ namespace POSServer.Controllers
                 p.RetailPrice,
                 p.WholesalePrice,
                 p.ReorderLevel,
+                p.Remarks,
                 p.IsVat,
                 p.Status,
                 p.DateCreated,

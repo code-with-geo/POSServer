@@ -18,6 +18,8 @@ namespace POSServer.Data
         public DbSet<Discounts> Discounts { get; set; } = null!;
         public DbSet<Suppliers> Suppliers { get; set; } = null!;
 
+        public DbSet<Customers> Customers { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -111,6 +113,15 @@ namespace POSServer.Data
                 entity.HasOne(d => d.Discounts)
                   .WithMany(o => o.Orders)
                   .HasForeignKey(d => d.DiscountId);
+
+                entity.HasOne(c => c.Customers)
+                 .WithMany(o => o.Orders)
+                 .HasForeignKey(c => c.CustomerId);
+
+                entity.HasOne(c => c.Customers)
+                  .WithMany(o => o.Orders)
+                  .HasForeignKey(c => c.CustomerId)
+                  .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<OrderProducts>(entity =>
@@ -165,6 +176,13 @@ namespace POSServer.Data
                     .HasMaxLength(50)
                     .IsRequired();
                 entity.Property(s => s.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+
+            modelBuilder.Entity<Customers>(entity =>
+            {
+                entity.HasKey(c => c.CustomerId);
+                entity.Property(c => c.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
         }
     }

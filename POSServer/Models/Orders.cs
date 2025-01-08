@@ -34,6 +34,10 @@ namespace POSServer.Models
         [ForeignKey("DiscountId")]
         public Discounts? Discounts { get; set; }
 
+        public int CustomerId { get; set; }
+        [ForeignKey("CustomerId")]
+        public Customers? Customers { get; set; }
+
         // Many-to-many relationship with products
         public ICollection<OrderProducts> OrderProducts { get; set; } = new List<OrderProducts>();
 

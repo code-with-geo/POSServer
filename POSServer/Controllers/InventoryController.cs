@@ -33,7 +33,10 @@ namespace POSServer.Controllers
             .Select(i => new
             {
                 i.InventoryId,
+                i.Specification,
                 i.Units,
+                i.ProductId,
+                i.LocationId,
                 Product = i.Products == null ? null : new
                 {
                     i.Products.Id,
