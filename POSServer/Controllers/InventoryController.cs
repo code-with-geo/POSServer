@@ -81,21 +81,20 @@ namespace POSServer.Controllers
 
             if (existingInventory != null)
             {
-                // Update the units for the existing product
-                existingInventory.Units += inventory.Units;
-                existingInventory.Specification = inventory.Specification;
-
-                // Notify SignalR clients about the update
-                await _hubContext.Clients.All.SendAsync("InventoryUpdated", existingInventory);
+                // If the product already exists, return an error response
+                return BadRequest(new
+                {
+                    Message = "Product already exists in the inventory for the given location.",
+                    ProductId = inventory.ProductId,
+                    LocationId = inventory.LocationId
+                });
             }
-            else
-            {
-                // Add a new inventory entry
-                _context.Inventory.Add(inventory);
 
-                // Notify SignalR clients about the addition
-                await _hubContext.Clients.All.SendAsync("InventoryAdded", inventory);
-            }
+            // Add a new inventory entry
+            _context.Inventory.Add(inventory);
+
+            // Notify SignalR clients about the addition
+            await _hubContext.Clients.All.SendAsync("InventoryAdded", inventory);
 
             // Save changes to the database
             await _context.SaveChangesAsync();
@@ -126,7 +125,8 @@ namespace POSServer.Controllers
         [Authorize]
         public async Task<IActionResult> Disable(int id)
         {
-            var dbInventory = _context.Inventory.Find(id);
+            // Query the inventory by ProductId instead of InventoryId
+            var dbInventory = await _context.Inventory.FirstOrDefaultAsync(i => i.ProductId == id);
             if (dbInventory == null) return NotFound();
 
             dbInventory.Status = 0;
@@ -151,6 +151,7 @@ namespace POSServer.Controllers
                                           select new
                                           {
                                               inventory.InventoryId,
+                                              product.Id,
                                               ProductName = product.Name,
                                               product.Barcode,
                                               ProductDescription = product.Description,
@@ -162,6 +163,94 @@ namespace POSServer.Controllers
                                           }).ToListAsync();
 
             return Ok(inventoryDetails);
+        }
+
+        [HttpGet("all")]
+        [Authorize]
+        public async Task<IActionResult> GetInventoryDetails([FromQuery] int? locationId)
+        {
+            if (_context == null)
+                return StatusCode(500, "Database context is null.");
+
+            var query = from inventory in _context.Inventory
+                        join product in _context.Products
+                        on inventory.ProductId equals product.Id
+                        join location in _context.Locations
+                        on inventory.LocationId equals location.LocationId
+                        where !locationId.HasValue || inventory.LocationId == locationId.Value // Apply filter before projection
+                        select new
+                        {
+                            inventory.InventoryId,
+                            product.Id,
+                            ProductName = product.Name,
+                            product.Barcode,
+                            ProductDescription = product.Description,
+                            inventory.Units,
+                            inventory.Specification,
+                            LocationName = location.Name,
+                            inventory.Status,
+                            inventory.DateCreated
+                        };
+
+            var inventoryDetails = await query.ToListAsync();
+
+            if (!inventoryDetails.Any())
+                return NotFound($"No inventory details found for location ID {locationId}.");
+
+            return Ok(inventoryDetails);
+        }
+
+        [HttpGet("pos")]
+        [Authorize]
+        public IActionResult GetAll([FromQuery] int? locationId)
+        {
+            if (_context == null)
+                return StatusCode(500, "Database context is null.");
+
+            var query = _context.Inventory
+                .Include(i => i.Products)
+                .ThenInclude(p => p.Category) // Ensure Category is included
+                .Include(i => i.Locations)
+                .AsQueryable();
+
+            // Apply location filter if provided
+            if (locationId.HasValue)
+            {
+                query = query.Where(i => i.LocationId == locationId.Value);
+            }
+
+            var inventory = query.Select(i => new
+            {
+                i.InventoryId,
+                i.Specification,
+                i.Units,
+                i.ProductId,
+                i.LocationId,
+                Product = i.Products == null ? null : new
+                {
+                    i.Products.Id,
+                    i.Products.Name,
+                    i.Products.Description,
+                    i.Products.RetailPrice,
+                    Category = i.Products.Category == null ? null : new
+                    {
+                        i.Products.Category.CategoryId,
+                        i.Products.Category.Name
+                    }
+                },
+                Location = i.Locations == null ? null : new
+                {
+                    i.Locations.LocationId,
+                    i.Locations.Name
+                },
+                i.Status,
+                i.DateCreated
+            }).ToList();
+
+            if (!inventory.Any())
+                return NotFound($"No inventory found for location ID {locationId}.");
+
+            return Ok(inventory);
         }
     }
 }

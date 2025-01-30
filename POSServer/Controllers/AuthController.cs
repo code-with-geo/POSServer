@@ -62,6 +62,9 @@ namespace POSServer.Controllers
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
+            var expirationTime = DateTime.UtcNow.AddMinutes(30);
+            Console.WriteLine($"Token expiration time (UTC): {expirationTime}");
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -69,12 +72,15 @@ namespace POSServer.Controllers
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
+                expires: expirationTime,
                 signingCredentials: creds);
+
+           
 
             return Ok(new
             {
                 UserId = user.Id,
+                LocationId = user.LocationId,
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
                 Message = "Login successfully"
             });
@@ -96,9 +102,25 @@ namespace POSServer.Controllers
         [Authorize]
         public IActionResult Get(int id)
         {
-            var users = _context.Users.Find(id);
-            if (users == null) return NotFound();
-            return Ok(users);
+            var user = _context.Users
+              .Where(u => u.Id == id)
+              .Select(u => new
+              {
+                  u.Id,
+                  u.Username,
+                  u.Password,
+                  u.PasswordHash,
+                  u.Name,
+                  u.IsRole,
+                  u.Status,
+                  u.DateCreated
+              })
+              .FirstOrDefault();
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
         }
 
         [HttpPost]
@@ -116,7 +138,8 @@ namespace POSServer.Controllers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(users.Password),
                 Name = users.Name,
                 IsRole = users.IsRole,
-                Status = users.Status
+                Status = users.Status,
+                LocationId = users.LocationId
             };
 
             _context.Users.Add(user);
@@ -163,6 +186,23 @@ namespace POSServer.Controllers
             await _hubContext.Clients.All.SendAsync("UserUpdated", dbUser);
 
             return NoContent();
+        }
+
+        [HttpGet("locations/{locationId}")]
+        [Authorize]
+        public IActionResult GetAll(int locationId)
+        {
+            if (_context == null)
+                return StatusCode(500, "Database context is null.");
+
+            var users = _context.Users
+                                .Where(u => u.LocationId == locationId) // Assuming your User model has a LocationId property
+                                .ToList();
+
+            if (!users.Any())
+                return NotFound($"No users found for location ID {locationId}.");
+
+            return Ok(users);
         }
     }
 }

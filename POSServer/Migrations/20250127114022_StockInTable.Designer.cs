@@ -11,8 +11,8 @@ using POSServer.Data;
 namespace POSServer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250108040845_AddCascadeDeleteToOrders")]
-    partial class AddCascadeDeleteToOrders
+    [Migration("20250127114022_StockInTable")]
+    partial class StockInTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -207,16 +207,13 @@ namespace POSServer.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("LocationType")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
-
-                    b.Property<string>("Password")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("longtext");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -360,6 +357,53 @@ namespace POSServer.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("POSServer.Models.StockIn", b =>
+                {
+                    b.Property<int>("StockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReferenceNo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("StockId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StockIn");
+                });
+
             modelBuilder.Entity("POSServer.Models.Suppliers", b =>
                 {
                     b.Property<int>("SupplierId")
@@ -413,6 +457,9 @@ namespace POSServer.Migrations
                     b.Property<int>("IsRole")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
 
@@ -429,6 +476,8 @@ namespace POSServer.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
 
                     b.ToTable("Users");
                 });
@@ -526,6 +575,45 @@ namespace POSServer.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("POSServer.Models.StockIn", b =>
+                {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("StockIn")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Products", "Products")
+                        .WithMany("StockIn")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Suppliers", "Suppliers")
+                        .WithMany("StockIn")
+                        .HasForeignKey("SupplierId");
+
+                    b.HasOne("POSServer.Models.Users", "Users")
+                        .WithMany("StockIn")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Locations");
+
+                    b.Navigation("Products");
+
+                    b.Navigation("Suppliers");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Users", b =>
+                {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("Users")
+                        .HasForeignKey("LocationId");
+
+                    b.Navigation("Locations");
+                });
+
             modelBuilder.Entity("POSServer.Models.Category", b =>
                 {
                     b.Navigation("Products");
@@ -546,6 +634,10 @@ namespace POSServer.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("StockIn");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("POSServer.Models.Orders", b =>
@@ -558,6 +650,13 @@ namespace POSServer.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("OrderProducts");
+
+                    b.Navigation("StockIn");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Suppliers", b =>
+                {
+                    b.Navigation("StockIn");
                 });
 
             modelBuilder.Entity("POSServer.Models.Users", b =>
@@ -565,6 +664,8 @@ namespace POSServer.Migrations
                     b.Navigation("CashDrawer");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("StockIn");
                 });
 #pragma warning restore 612, 618
         }

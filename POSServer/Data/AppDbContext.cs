@@ -17,7 +17,8 @@ namespace POSServer.Data
         public DbSet<CashDrawer> CashDrawer { get; set; } = null!;
         public DbSet<Discounts> Discounts { get; set; } = null!;
         public DbSet<Suppliers> Suppliers { get; set; } = null!;
-
+        public DbSet<StockIn> StockIn { get; set; } = null!;
+        public DbSet<StockAdjustments> StockAdjustments { get; set; } = null!;
         public DbSet<Customers> Customers { get; set; } = null!;
 
 
@@ -183,6 +184,48 @@ namespace POSServer.Data
             {
                 entity.HasKey(c => c.CustomerId);
                 entity.Property(c => c.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            modelBuilder.Entity<StockIn>(entity =>
+            {
+               entity.HasKey(s => s.StockId);
+               entity.Property(s => s.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(u => u.Users)
+                    .WithMany(s => s.StockIn)
+                    .HasForeignKey(u => u.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(l => l.Locations)
+                  .WithMany(s => s.StockIn)
+                  .HasForeignKey(l => l.LocationId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(p => p.Products)
+                  .WithMany(s => s.StockIn)
+                  .HasForeignKey(p => p.ProductId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<StockAdjustments>(entity =>
+            {
+                entity.HasKey(s => s.AdjustmentId);
+                entity.Property(s => s.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(u => u.Users)
+                    .WithMany(s => s.StockAdjustments)
+                    .HasForeignKey(u => u.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(l => l.Locations)
+                  .WithMany(s => s.StockAdjustments)
+                  .HasForeignKey(l => l.LocationId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(p => p.Products)
+                  .WithMany(s => s.StockAdjustments)
+                  .HasForeignKey(p => p.ProductId)
+                  .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

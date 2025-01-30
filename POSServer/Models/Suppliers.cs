@@ -29,5 +29,7 @@ namespace POSServer.Models
         [Required]
         [Range(0, 1, ErrorMessage = "Status must be 0 (inactive) or 1 (active).")]
         public int Status { get; set; }
+
+        public ICollection<StockIn> StockIn { get; set; } = new List<StockIn>();
     }
 }

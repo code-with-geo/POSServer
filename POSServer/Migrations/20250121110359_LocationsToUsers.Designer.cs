@@ -11,8 +11,8 @@ using POSServer.Data;
 namespace POSServer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241231100428_AddDiscountOnOrders")]
-    partial class AddDiscountOnOrders
+    [Migration("20250121110359_LocationsToUsers")]
+    partial class LocationsToUsers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -97,6 +97,45 @@ namespace POSServer.Migrations
                     b.ToTable("Category");
                 });
 
+            modelBuilder.Entity("POSServer.Models.Customers", b =>
+                {
+                    b.Property<int>("CustomerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContactNo")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("varchar(11)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<int>("TransactionCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("CustomerId");
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("POSServer.Models.Discounts", b =>
                 {
                     b.Property<int>("DiscountId")
@@ -168,16 +207,13 @@ namespace POSServer.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("LocationType")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
-
-                    b.Property<string>("Password")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("longtext");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -223,6 +259,9 @@ namespace POSServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("DateCreated")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
@@ -245,6 +284,8 @@ namespace POSServer.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("DiscountId");
 
@@ -369,6 +410,9 @@ namespace POSServer.Migrations
                     b.Property<int>("IsRole")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
 
@@ -385,6 +429,8 @@ namespace POSServer.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
 
                     b.ToTable("Users");
                 });
@@ -441,6 +487,12 @@ namespace POSServer.Migrations
 
             modelBuilder.Entity("POSServer.Models.Orders", b =>
                 {
+                    b.HasOne("POSServer.Models.Customers", "Customers")
+                        .WithMany("Orders")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("POSServer.Models.Discounts", "Discounts")
                         .WithMany("Orders")
                         .HasForeignKey("DiscountId")
@@ -456,6 +508,8 @@ namespace POSServer.Migrations
                     b.HasOne("POSServer.Models.Users", "Users")
                         .WithMany("Orders")
                         .HasForeignKey("UserId");
+
+                    b.Navigation("Customers");
 
                     b.Navigation("Discounts");
 
@@ -474,9 +528,23 @@ namespace POSServer.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("POSServer.Models.Users", b =>
+                {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("Users")
+                        .HasForeignKey("LocationId");
+
+                    b.Navigation("Locations");
+                });
+
             modelBuilder.Entity("POSServer.Models.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Customers", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("POSServer.Models.Discounts", b =>
@@ -489,6 +557,8 @@ namespace POSServer.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("POSServer.Models.Orders", b =>

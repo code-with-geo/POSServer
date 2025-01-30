@@ -19,9 +19,19 @@ namespace POSServer.Models
         [Range(0, 1, ErrorMessage = "Status must be 0 (inactive) or 1 (active).")]
         public int Status { get; set; }
 
+        //Location
+        public int? LocationId { get; set; }
+
+        [ForeignKey("LocationId")]
+        public Locations? Locations { get; set; }
+
         public ICollection<CashDrawer> CashDrawer { get; set; } = new List<CashDrawer>();
 
         public ICollection<Orders> Orders { get; set; } = new List<Orders>();
+
+        public ICollection<StockIn> StockIn { get; set; } = new List<StockIn>();
+
+        public ICollection<StockAdjustments> StockAdjustments { get; set; } = new List<StockAdjustments>();
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;

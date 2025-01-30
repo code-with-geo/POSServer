@@ -10,8 +10,6 @@ namespace POSServer.Models
         [Required]
         [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
         public string? Name { get; set; }
-        public string? Password { get; set; }
-        public string? PasswordHash { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime DateCreated { get; set; }
@@ -22,7 +20,17 @@ namespace POSServer.Models
         [Range(0, 1, ErrorMessage = "Status must be 0 (inactive) or 1 (active).")]
         public int Status { get; set; }
 
+        [Required]
+        [Range(0, 1, ErrorMessage = "Location type must be 0 (inactive) or 1 (active).")]
+        public int LocationType { get; set; }
+
+        public ICollection<Users> Users { get; set; } = new List<Users>();
+
         public ICollection<Orders> Orders { get; set; } = new List<Orders>();
+
+        public ICollection<StockIn> StockIn { get; set; } = new List<StockIn>();
+
+        public ICollection<StockAdjustments> StockAdjustments { get; set; } = new List<StockAdjustments>();
 
     }
 }

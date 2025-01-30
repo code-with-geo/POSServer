@@ -58,5 +58,8 @@ namespace POSServer.Models
         // Many-to-many relationship with orders
         public ICollection<OrderProducts> OrderProducts { get; set; } = new List<OrderProducts>();
 
+        public ICollection<StockIn> StockIn { get; set; } = new List<StockIn>();
+
+        public ICollection<StockAdjustments> StockAdjustments { get; set; } = new List<StockAdjustments>();
     }
 }

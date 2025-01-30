@@ -11,8 +11,8 @@ using POSServer.Data;
 namespace POSServer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241231083749_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250127150845_AddReasonColumn")]
+    partial class AddReasonColumn
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -97,6 +97,45 @@ namespace POSServer.Migrations
                     b.ToTable("Category");
                 });
 
+            modelBuilder.Entity("POSServer.Models.Customers", b =>
+                {
+                    b.Property<int>("CustomerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContactNo")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("varchar(11)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<int>("TransactionCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("CustomerId");
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("POSServer.Models.Discounts", b =>
                 {
                     b.Property<int>("DiscountId")
@@ -168,16 +207,13 @@ namespace POSServer.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("LocationType")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
-
-                    b.Property<string>("Password")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("longtext");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -195,6 +231,12 @@ namespace POSServer.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("DiscountId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DiscountsDiscountId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -203,6 +245,8 @@ namespace POSServer.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("OrderId", "ProductId");
+
+                    b.HasIndex("DiscountsDiscountId");
 
                     b.HasIndex("ProductId");
 
@@ -215,10 +259,16 @@ namespace POSServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("DateCreated")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("DiscountId")
+                        .HasColumnType("int");
 
                     b.Property<int>("LocationId")
                         .HasColumnType("int");
@@ -234,6 +284,10 @@ namespace POSServer.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("DiscountId");
 
                     b.HasIndex("LocationId");
 
@@ -303,6 +357,91 @@ namespace POSServer.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("POSServer.Models.StockAdjustments", b =>
+                {
+                    b.Property<int>("AdjustmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Actions")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AdjustmentId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StockAdjustments");
+                });
+
+            modelBuilder.Entity("POSServer.Models.StockIn", b =>
+                {
+                    b.Property<int>("StockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReferenceNo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("StockId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StockIn");
+                });
+
             modelBuilder.Entity("POSServer.Models.Suppliers", b =>
                 {
                     b.Property<int>("SupplierId")
@@ -356,6 +495,9 @@ namespace POSServer.Migrations
                     b.Property<int>("IsRole")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
 
@@ -372,6 +514,8 @@ namespace POSServer.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
 
                     b.ToTable("Users");
                 });
@@ -403,6 +547,10 @@ namespace POSServer.Migrations
 
             modelBuilder.Entity("POSServer.Models.OrderProducts", b =>
                 {
+                    b.HasOne("POSServer.Models.Discounts", "Discounts")
+                        .WithMany()
+                        .HasForeignKey("DiscountsDiscountId");
+
                     b.HasOne("POSServer.Models.Orders", "Orders")
                         .WithMany("OrderProducts")
                         .HasForeignKey("OrderId")
@@ -415,6 +563,8 @@ namespace POSServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Discounts");
+
                     b.Navigation("Orders");
 
                     b.Navigation("Products");
@@ -422,6 +572,18 @@ namespace POSServer.Migrations
 
             modelBuilder.Entity("POSServer.Models.Orders", b =>
                 {
+                    b.HasOne("POSServer.Models.Customers", "Customers")
+                        .WithMany("Orders")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("POSServer.Models.Discounts", "Discounts")
+                        .WithMany("Orders")
+                        .HasForeignKey("DiscountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("POSServer.Models.Locations", "Location")
                         .WithMany("Orders")
                         .HasForeignKey("LocationId")
@@ -431,6 +593,10 @@ namespace POSServer.Migrations
                     b.HasOne("POSServer.Models.Users", "Users")
                         .WithMany("Orders")
                         .HasForeignKey("UserId");
+
+                    b.Navigation("Customers");
+
+                    b.Navigation("Discounts");
 
                     b.Navigation("Location");
 
@@ -447,9 +613,82 @@ namespace POSServer.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("POSServer.Models.StockAdjustments", b =>
+                {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("StockAdjustments")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Products", "Products")
+                        .WithMany("StockAdjustments")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Users", "Users")
+                        .WithMany("StockAdjustments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Locations");
+
+                    b.Navigation("Products");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("POSServer.Models.StockIn", b =>
+                {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("StockIn")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Products", "Products")
+                        .WithMany("StockIn")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Suppliers", "Suppliers")
+                        .WithMany("StockIn")
+                        .HasForeignKey("SupplierId");
+
+                    b.HasOne("POSServer.Models.Users", "Users")
+                        .WithMany("StockIn")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Locations");
+
+                    b.Navigation("Products");
+
+                    b.Navigation("Suppliers");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Users", b =>
+                {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("Users")
+                        .HasForeignKey("LocationId");
+
+                    b.Navigation("Locations");
+                });
+
             modelBuilder.Entity("POSServer.Models.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Customers", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Discounts", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("POSServer.Models.Locations", b =>
@@ -457,6 +696,12 @@ namespace POSServer.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("StockAdjustments");
+
+                    b.Navigation("StockIn");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("POSServer.Models.Orders", b =>
@@ -469,6 +714,15 @@ namespace POSServer.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("OrderProducts");
+
+                    b.Navigation("StockAdjustments");
+
+                    b.Navigation("StockIn");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Suppliers", b =>
+                {
+                    b.Navigation("StockIn");
                 });
 
             modelBuilder.Entity("POSServer.Models.Users", b =>
@@ -476,6 +730,10 @@ namespace POSServer.Migrations
                     b.Navigation("CashDrawer");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("StockAdjustments");
+
+                    b.Navigation("StockIn");
                 });
 #pragma warning restore 612, 618
         }

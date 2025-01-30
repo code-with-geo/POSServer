@@ -42,7 +42,7 @@ namespace POSServer.Controllers
         [Authorize]
         public IActionResult Get(int id)
         {
-            var locations = _context.Locations.Find(id);
+            var locations = _context.Locations.Where(l => l.LocationId == id).ToList();
             if (locations == null) return NotFound();
             return Ok(locations);
         }
@@ -55,9 +55,8 @@ namespace POSServer.Controllers
             var location = new Locations
             {
                 Name = locations.Name,
-                Password = locations.Password,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(locations.Password),
-                Status = locations.Status
+                Status = locations.Status,
+                LocationType = locations.LocationType
             };
 
             // Add the new location to the context
@@ -79,8 +78,6 @@ namespace POSServer.Controllers
             if (dbLocations == null) return NotFound();
 
             dbLocations.Name = locations.Name;
-            dbLocations.Password = locations.Password;
-            dbLocations.PasswordHash = BCrypt.Net.BCrypt.HashPassword(locations.Password);
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients
@@ -103,20 +100,6 @@ namespace POSServer.Controllers
             await _hubContext.Clients.All.SendAsync("LocationUpdated", dbLocations);
 
             return NoContent();
-        }
-
-        [HttpPost("login")]
-        public IActionResult Login(int locationid, string password)
-        {
-            // Find the location by ID
-            var locations = _context.Locations.FirstOrDefault(l => l.LocationId == locationid);
-            if (locations == null || !BCrypt.Net.BCrypt.Verify(password, locations.PasswordHash))
-                return Unauthorized("Invalid credentials.");
-
-            return Ok(new
-            {
-                Message = "Login successfully"
-            });
         }
     }
 }
