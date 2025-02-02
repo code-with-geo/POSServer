@@ -30,6 +30,8 @@ namespace POSServer.Models
 
         public ICollection<StockIn> StockIn { get; set; } = new List<StockIn>();
 
+        public ICollection<CashDrawer> CashDrawer { get; set; } = new List<CashDrawer>();
+
         public ICollection<StockAdjustments> StockAdjustments { get; set; } = new List<StockAdjustments>();
 
     }

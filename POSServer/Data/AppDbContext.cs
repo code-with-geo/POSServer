@@ -21,6 +21,10 @@ namespace POSServer.Data
         public DbSet<StockAdjustments> StockAdjustments { get; set; } = null!;
         public DbSet<Customers> Customers { get; set; } = null!;
 
+        public DbSet<Expense> Expense { get; set; } = null!;
+        public DbSet<Withdrawals> Withdrawals { get; set; } = null!;
+        public DbSet<InitialCash> InitialCash { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -111,18 +115,15 @@ namespace POSServer.Data
                   .WithMany(o => o.Orders)
                   .HasForeignKey(l => l.LocationId);
 
-                entity.HasOne(d => d.Discounts)
-                  .WithMany(o => o.Orders)
-                  .HasForeignKey(d => d.DiscountId);
-
                 entity.HasOne(c => c.Customers)
                  .WithMany(o => o.Orders)
-                 .HasForeignKey(c => c.CustomerId);
+                 .HasForeignKey(c => c.CustomerId)
+                 .OnDelete(DeleteBehavior.SetNull);
 
-                entity.HasOne(c => c.Customers)
-                  .WithMany(o => o.Orders)
-                  .HasForeignKey(c => c.CustomerId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                //entity.HasOne(c => c.Customers)
+                //  .WithMany(o => o.Orders)
+                //  .HasForeignKey(c => c.CustomerId)
+                //  .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<OrderProducts>(entity =>
@@ -153,6 +154,10 @@ namespace POSServer.Data
                 entity.HasOne(u => u.Users)
                     .WithMany(cd => cd.CashDrawer)
                     .HasForeignKey(cd => cd.UserId);
+
+                entity.HasOne(u => u.Locations)
+                    .WithMany(cd => cd.CashDrawer)
+                    .HasForeignKey(cd => cd.LocationId);
             });
 
             modelBuilder.Entity<Discounts>(entity =>
@@ -226,6 +231,42 @@ namespace POSServer.Data
                   .WithMany(s => s.StockAdjustments)
                   .HasForeignKey(p => p.ProductId)
                   .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Expense>(entity =>
+            {
+                entity.HasKey(s => s.ExpenseId);
+                entity.Property(s => s.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(u => u.CashDrawer)
+                    .WithMany(s => s.Expenses)
+                    .HasForeignKey(u => u.DrawerId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            });
+
+            modelBuilder.Entity<Withdrawals>(entity =>
+            {
+                entity.HasKey(s => s.WithdrawalId);
+                entity.Property(s => s.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(u => u.CashDrawer)
+                    .WithMany(s => s.Withdrawal)
+                    .HasForeignKey(u => u.DrawerId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            });
+
+            modelBuilder.Entity<InitialCash>(entity =>
+            {
+                entity.HasKey(s => s.InitialCashId);
+                entity.Property(s => s.DateCreated).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(u => u.CashDrawer)
+                    .WithMany(s => s.AdditionalInitialCash)
+                    .HasForeignKey(u => u.DrawerId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
             });
         }
     }

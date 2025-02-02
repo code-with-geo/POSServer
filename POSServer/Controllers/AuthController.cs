@@ -62,7 +62,7 @@ namespace POSServer.Controllers
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-            var expirationTime = DateTime.UtcNow.AddMinutes(30);
+            var expirationTime = DateTime.UtcNow.AddHours(24);
             Console.WriteLine($"Token expiration time (UTC): {expirationTime}");
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));

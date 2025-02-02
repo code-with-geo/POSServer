@@ -28,7 +28,9 @@ namespace POSServer.Controllers
             if (_context == null)
                 return StatusCode(500, "Database context is null.");
 
-            var customers = _context.Customers.ToList();
+            var customers = _context.Customers
+                                    .Where(c => c.Status == 1) // Only get customers with Status = 1
+                                    .ToList();
 
             return Ok(customers);
         }
@@ -66,6 +68,7 @@ namespace POSServer.Controllers
             dbCustomers.LastName = customers.LastName;
             dbCustomers.ContactNo = customers.ContactNo;
             dbCustomers.Email = customers.Email;
+
             await _context.SaveChangesAsync();
 
             // Notify SignalR clients

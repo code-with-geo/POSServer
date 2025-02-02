@@ -19,6 +19,35 @@ namespace POSServer.Models
         [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
         public decimal TotalAmount { get; set; }
 
+        [Column(TypeName = "decimal(18, 2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
+        public decimal TotalDiscount { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
+        public decimal TotalVatSale { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
+        public decimal TotalVatAmount { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
+        public decimal TotalVatExempt { get; set; }
+
+        [Required]
+        public int TransactionType { get; set; }
+
+        [Required]
+        public int PaymentType { get; set; }
+        public string? InvoiceNo { get; set; }
+        public string? AccountName { get; set; }
+        public string? AccountNumber { get; set; }
+        public string? ReferenceNo { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
+        public decimal DigitalPaymentAmount { get; set; }
         public int? UserId { get; set; }
 
         [ForeignKey("UserId")]
@@ -29,12 +58,7 @@ namespace POSServer.Models
         [ForeignKey("LocationId")]
         public Locations? Location { get; set; }
 
-        // Foreign key for Discounts
-        public int DiscountId { get; set; }
-        [ForeignKey("DiscountId")]
-        public Discounts? Discounts { get; set; }
-
-        public int CustomerId { get; set; }
+        public int? CustomerId { get; set; }
         [ForeignKey("CustomerId")]
         public Customers? Customers { get; set; }
 

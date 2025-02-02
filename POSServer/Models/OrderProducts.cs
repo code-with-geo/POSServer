@@ -10,7 +10,6 @@ namespace POSServer.Models
         public int ProductId { get; set; }
         public Products? Products { get; set; }
         public int Quantity { get; set; }
-
         public int DiscountId { get; set; }
         public Discounts? Discounts { get; set; }
 

@@ -11,8 +11,8 @@ using POSServer.Data;
 namespace POSServer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250121110359_LocationsToUsers")]
-    partial class LocationsToUsers
+    [Migration("20250202161235_AddSettledColumn")]
+    partial class AddSettledColumn
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -47,16 +47,52 @@ namespace POSServer.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("TimeEnd")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("TimeStart")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalBankTransactionSales")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalCashSales")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalCreditSales")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalDiscount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalEWalletSales")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("TotalSales")
                         .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalSettledCredit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalVatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalVatExempt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalVatSale")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("UserId")
@@ -67,6 +103,8 @@ namespace POSServer.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("DrawerId");
+
+                    b.HasIndex("LocationId");
 
                     b.HasIndex("UserId");
 
@@ -103,6 +141,12 @@ namespace POSServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CardNumber")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("ContactNo")
                         .IsRequired()
                         .HasMaxLength(11)
@@ -127,6 +171,12 @@ namespace POSServer.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("TransactionCount")
                         .HasColumnType("int");
@@ -159,6 +209,66 @@ namespace POSServer.Migrations
                     b.HasKey("DiscountId");
 
                     b.ToTable("Discounts");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Expense", b =>
+                {
+                    b.Property<int>("ExpenseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("DrawerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("ExpenseId");
+
+                    b.HasIndex("DrawerId");
+
+                    b.ToTable("Expense");
+                });
+
+            modelBuilder.Entity("POSServer.Models.InitialCash", b =>
+                {
+                    b.Property<int>("InitialCashId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("DrawerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("InitialCashId");
+
+                    b.HasIndex("DrawerId");
+
+                    b.ToTable("InitialCash");
                 });
 
             modelBuilder.Entity("POSServer.Models.Inventory", b =>
@@ -259,7 +369,13 @@ namespace POSServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("CustomerId")
+                    b.Property<string>("AccountName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("AccountNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateCreated")
@@ -267,11 +383,23 @@ namespace POSServer.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("DiscountId")
+                    b.Property<decimal>("DigitalPaymentAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("DiscountsDiscountId")
                         .HasColumnType("int");
+
+                    b.Property<string>("InvoiceNo")
+                        .HasColumnType("longtext");
 
                     b.Property<int>("LocationId")
                         .HasColumnType("int");
+
+                    b.Property<int>("PaymentType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReferenceNo")
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -280,6 +408,21 @@ namespace POSServer.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("TotalDiscount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalVatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalVatExempt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalVatSale")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TransactionType")
+                        .HasColumnType("int");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
@@ -287,7 +430,7 @@ namespace POSServer.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("DiscountId");
+                    b.HasIndex("DiscountsDiscountId");
 
                     b.HasIndex("LocationId");
 
@@ -355,6 +498,91 @@ namespace POSServer.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("POSServer.Models.StockAdjustments", b =>
+                {
+                    b.Property<int>("AdjustmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Actions")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AdjustmentId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StockAdjustments");
+                });
+
+            modelBuilder.Entity("POSServer.Models.StockIn", b =>
+                {
+                    b.Property<int>("StockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReferenceNo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("StockId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StockIn");
                 });
 
             modelBuilder.Entity("POSServer.Models.Suppliers", b =>
@@ -435,13 +663,71 @@ namespace POSServer.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("POSServer.Models.Withdrawals", b =>
+                {
+                    b.Property<int>("WithdrawalId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("DrawerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("WithdrawalId");
+
+                    b.HasIndex("DrawerId");
+
+                    b.ToTable("Withdrawals");
+                });
+
             modelBuilder.Entity("POSServer.Models.CashDrawer", b =>
                 {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("CashDrawer")
+                        .HasForeignKey("LocationId");
+
                     b.HasOne("POSServer.Models.Users", "Users")
                         .WithMany("CashDrawer")
                         .HasForeignKey("UserId");
 
+                    b.Navigation("Locations");
+
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Expense", b =>
+                {
+                    b.HasOne("POSServer.Models.CashDrawer", "CashDrawer")
+                        .WithMany("Expenses")
+                        .HasForeignKey("DrawerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CashDrawer");
+                });
+
+            modelBuilder.Entity("POSServer.Models.InitialCash", b =>
+                {
+                    b.HasOne("POSServer.Models.CashDrawer", "CashDrawer")
+                        .WithMany("AdditionalInitialCash")
+                        .HasForeignKey("DrawerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CashDrawer");
                 });
 
             modelBuilder.Entity("POSServer.Models.Inventory", b =>
@@ -490,14 +776,11 @@ namespace POSServer.Migrations
                     b.HasOne("POSServer.Models.Customers", "Customers")
                         .WithMany("Orders")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("POSServer.Models.Discounts", "Discounts")
+                    b.HasOne("POSServer.Models.Discounts", null)
                         .WithMany("Orders")
-                        .HasForeignKey("DiscountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DiscountsDiscountId");
 
                     b.HasOne("POSServer.Models.Locations", "Location")
                         .WithMany("Orders")
@@ -510,8 +793,6 @@ namespace POSServer.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("Customers");
-
-                    b.Navigation("Discounts");
 
                     b.Navigation("Location");
 
@@ -528,6 +809,60 @@ namespace POSServer.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("POSServer.Models.StockAdjustments", b =>
+                {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("StockAdjustments")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Products", "Products")
+                        .WithMany("StockAdjustments")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Users", "Users")
+                        .WithMany("StockAdjustments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Locations");
+
+                    b.Navigation("Products");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("POSServer.Models.StockIn", b =>
+                {
+                    b.HasOne("POSServer.Models.Locations", "Locations")
+                        .WithMany("StockIn")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Products", "Products")
+                        .WithMany("StockIn")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("POSServer.Models.Suppliers", "Suppliers")
+                        .WithMany("StockIn")
+                        .HasForeignKey("SupplierId");
+
+                    b.HasOne("POSServer.Models.Users", "Users")
+                        .WithMany("StockIn")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Locations");
+
+                    b.Navigation("Products");
+
+                    b.Navigation("Suppliers");
+
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("POSServer.Models.Users", b =>
                 {
                     b.HasOne("POSServer.Models.Locations", "Locations")
@@ -535,6 +870,26 @@ namespace POSServer.Migrations
                         .HasForeignKey("LocationId");
 
                     b.Navigation("Locations");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Withdrawals", b =>
+                {
+                    b.HasOne("POSServer.Models.CashDrawer", "CashDrawer")
+                        .WithMany("Withdrawal")
+                        .HasForeignKey("DrawerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CashDrawer");
+                });
+
+            modelBuilder.Entity("POSServer.Models.CashDrawer", b =>
+                {
+                    b.Navigation("AdditionalInitialCash");
+
+                    b.Navigation("Expenses");
+
+                    b.Navigation("Withdrawal");
                 });
 
             modelBuilder.Entity("POSServer.Models.Category", b =>
@@ -554,9 +909,15 @@ namespace POSServer.Migrations
 
             modelBuilder.Entity("POSServer.Models.Locations", b =>
                 {
+                    b.Navigation("CashDrawer");
+
                     b.Navigation("Inventory");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("StockAdjustments");
+
+                    b.Navigation("StockIn");
 
                     b.Navigation("Users");
                 });
@@ -571,6 +932,15 @@ namespace POSServer.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("OrderProducts");
+
+                    b.Navigation("StockAdjustments");
+
+                    b.Navigation("StockIn");
+                });
+
+            modelBuilder.Entity("POSServer.Models.Suppliers", b =>
+                {
+                    b.Navigation("StockIn");
                 });
 
             modelBuilder.Entity("POSServer.Models.Users", b =>
@@ -578,6 +948,10 @@ namespace POSServer.Migrations
                     b.Navigation("CashDrawer");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("StockAdjustments");
+
+                    b.Navigation("StockIn");
                 });
 #pragma warning restore 612, 618
         }
