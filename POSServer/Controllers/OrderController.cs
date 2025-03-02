@@ -193,6 +193,7 @@ namespace POSServer.Controllers
                 {
                     case 0:
                         cashDrawer.TotalCashSales += totalOrderAmount;
+                        cashDrawer.DrawerCash += totalOrderAmount;
                         break;
                     case 1:
                         cashDrawer.TotalEWalletSales += totalOrderAmount;
@@ -297,27 +298,15 @@ namespace POSServer.Controllers
                 if (cashDrawer != null)
                 {
                     // Update the TotalSettledCredit
-                    cashDrawer.TotalSettledCredit = request.TotalSettledCredit;
+                    cashDrawer.TotalSettledCredit += request.TotalSettledCredit;
 
                     // Update sales totals based on payment type
                     switch (request.PaymentType)
                     {
                         case 0:
-                            cashDrawer.TotalCashSales += request.TotalSettledCredit;
-                            break;
-                        case 1:
-                            cashDrawer.TotalEWalletSales += request.TotalSettledCredit;
-                            break;
-                        case 2:
-                            cashDrawer.TotalBankTransactionSales += request.TotalSettledCredit;
-                            break;
-                        case 3:
-                            cashDrawer.TotalCreditSales += request.TotalSettledCredit;
+                            cashDrawer.DrawerCash += request.TotalSettledCredit;
                             break;
                     }
-
-                    // Update other sales totals in CashDrawer if needed
-                    cashDrawer.TotalAmount += request.TotalSettledCredit;
                 }
                 else
                 {
@@ -466,5 +455,56 @@ namespace POSServer.Controllers
               });
           }*/
 
+        [HttpGet("credits")]
+        [Authorize]
+        public async Task<IActionResult> GetCreditOrders()
+        {
+            var orders = await _context.Orders
+                .Where(o => o.LocationId == 1 && o.UserId == 2 && o.Status == 1)
+                .Join(
+                    _context.Customers,
+                    order => order.CustomerId,
+                    customer => customer.CustomerId,
+                    (order, customer) => new
+                    {
+                        InvoiceNo = order.InvoiceNo,
+                        TotalAmount = order.TotalAmount,
+                        DateCreated = order.DateCreated,
+                        FirstName = customer.FirstName,
+                        LastName = customer.LastName,
+                        ContactNo = customer.ContactNo,
+                        Email = customer.Email,
+
+                    }
+                )
+                .ToListAsync();
+
+            return Ok(orders);
+        }
+
+        [HttpGet("all/{locationId}")]
+        [Authorize]
+        public async Task<IActionResult> GetPendingOrders(int locationId, int userId)
+        {
+            var orders = await _context.Orders
+                .Where(o => o.LocationId == locationId && o.Status == 0)
+                .Join(
+                    _context.Customers,
+                    order => order.CustomerId,
+                    customer => customer.CustomerId,
+                    (order, customer) => new
+                    {
+                        InvoiceNo = order.InvoiceNo,
+                        TotalAmount = order.TotalAmount,
+                        Name = customer.FirstName + " " + customer.LastName,
+                        TransactionType = order.TransactionType == 1 ? "Retail Transaction" : "Wholesale",
+                        PaymentType = order.PaymentType,
+                        DateCreated = order.DateCreated
+                    }
+                )
+                .ToListAsync();
+
+            return Ok(orders);
+        }
     }
 }
